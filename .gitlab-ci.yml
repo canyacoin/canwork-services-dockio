@@ -1,0 +1,35 @@
+image: registry.gitlab.com/canya-com/devops/gcloud-golang-111:0.1
+
+stages:
+  - deploy
+
+variables:
+  GOPATH: /go
+  APP_PATH: $GOPATH/src/gitlab.com/$CI_PROJECT_PATH
+
+before_script:
+  - echo "+ perfoming build on alpine '`cat /etc/alpine-release`' with '`go version`'" 
+  - echo "+ relocating cloned sources to $APP_PATH to satisfy go's package tree structure"
+  - mkdir -p `dirname $APP_PATH`
+  - mv /builds/$CI_PROJECT_PATH $APP_PATH
+  - mkdir -p /builds/$CI_PROJECT_PATH
+  - export GOPATH=$GOPATH
+
+deploy:staging:
+  stage: deploy
+  environment:
+    name: staging
+  script:
+    - cd $APP_PATH
+    - echo "Deploy to staging target GAE instance with project ID $GCP_PROJECT_ID"
+    - echo $GCP_KEY > /tmp/$CI_PIPELINE_ID.json
+    - echo -n "+ using GCP KEY for staging deployer " && cat /tmp/$CI_PIPELINE_ID.json
+    # - echo $APP_YAML_BASE64 | base64 -d > ./app.yaml
+    - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - gcloud --quiet app deploy
+    - curl --fail https://$CI_PROJECT_NAME-dot-$GCP_PROJECT_ID.appspot.com/status
+  only:
+    - master
+  allow_failure: false
+

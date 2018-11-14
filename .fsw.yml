@@ -1,0 +1,21 @@
+desc: dock-io-auth-service
+triggers:
+- name: ""
+  pattens:
+  - '**/*.go'
+  - '**/*.y*ml'
+  - '!vendor/**'
+  env:
+    GOOGLE_APPLICATION_CREDENTIALS: ""
+    PORT: "1883"
+    GCP_PROJECT_ID: ""
+    ETHEREUM_PRIVATE_KEY: ""
+  cmd: clear; go build && ./dock-io-auth-service
+  shell: true
+  delay: 50ms
+  stop_timeout: 500ms
+  signal: KILL
+  kill_signal: ""
+watch_paths:
+- .
+watch_depth: 0
