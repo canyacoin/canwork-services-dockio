@@ -1,4 +1,4 @@
-package: gitlab.com/canya-com/canwork/services/dock-io-auth-service
+package: gitlab.com/canya-com/canwork/services/dock-io-integration
 import:
 - package: github.com/gin-gonic/gin
   version: ^1.3.0
