@@ -256,6 +256,7 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 			query := []firestore.Update{
 				{Path: "email", Value: email.Data.Email},
 				{Path: "@context", Value: "https://dock.io"},
+				{Path: "isDockUpdating", Value: true},
 			}
 			_, err = updateFirestoreProperty(c, fmt.Sprintf("users/%s", doc.Data()["address"]), query)
 			if err != nil {
@@ -276,9 +277,10 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 	logger.Infof("User address is: [%s]", user.UserInfo.UID)
 
 	doc := map[string]interface{}{
-		"@context": "https://dock.io",
-		"email":    email.Data.Email,
-		"address":  user.UserInfo.UID,
+		"@context":       "https://dock.io",
+		"isDockUpdating": true,
+		"email":          email.Data.Email,
+		"address":        user.UserInfo.UID,
 		"avatar": map[string]string{
 			"uri": "https://api.adorable.io/avatars/98/abott@adorable.png",
 		},
