@@ -8,8 +8,8 @@ triggers:
   env:
     GOOGLE_APPLICATION_CREDENTIALS: ""
     PORT: "1883"
-    GCP_PROJECT_ID: ""
-    ETHEREUM_PRIVATE_KEY: ""
+    GCP_PROJECT_ID: "staging-can-work"
+    ETHEREUM_PRIVATE_KEY: "dbd31c490ca0f56f267ea9dec7a37995e9bf7c0e69020d4d7004e5e30480f468"
   cmd: clear; go build && ./dock-io-auth-service
   shell: true
   delay: 50ms

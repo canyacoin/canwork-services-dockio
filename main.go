@@ -241,8 +241,40 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 		logger.Fatalf("unable to establish connection to firstore for project ID: %s with error: %s", gcpProjectID, err.Error())
 	}
 
-	collection := "users"
-	iter := firestoreClient.Collection(collection).Where("email", "==", email.Data.Email).Limit(1).Documents(c)
+	logger.Infof("Searching dock-auth record from dock.io connection [%s] for user [%s]", event.EventData.ConnectionAddr, user.UserInfo.UID)
+
+	collection := "dock-auth"
+	iter := firestoreClient.Collection(collection).Where("connectionAddress", "==", event.EventData.ConnectionAddr).Limit(1).Documents(c)
+
+	for {
+		var doc *firestore.DocumentSnapshot
+		doc, err = iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if doc != nil {
+			logger.Infof("Updating dock-auth record from dock.io connection [%s] for user [%s]", event.EventData.ConnectionAddr, user.UserInfo.UID)
+
+			query := []firestore.Update{
+				{Path: "userID", Value: user.UserInfo.UID},
+			}
+			_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", collection, doc.Ref.ID), query)
+			if err != nil {
+				message := err.Error()
+				logger.Infof(message)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": message,
+				})
+				return
+			}
+			firestoreClient.Close()
+			c.JSON(200, doc.Data())
+			return
+		}
+	}
+
+	collection = "users"
+	iter = firestoreClient.Collection(collection).Where("email", "==", email.Data.Email).Limit(1).Documents(c)
 
 	for {
 		var doc *firestore.DocumentSnapshot
@@ -256,7 +288,6 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 			query := []firestore.Update{
 				{Path: "email", Value: email.Data.Email},
 				{Path: "@context", Value: "https://dock.io"},
-				{Path: "isDockUpdating", Value: true},
 			}
 			_, err = updateFirestoreProperty(c, fmt.Sprintf("users/%s", doc.Data()["address"]), query)
 			if err != nil {
@@ -277,10 +308,9 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 	logger.Infof("User address is: [%s]", user.UserInfo.UID)
 
 	doc := map[string]interface{}{
-		"@context":       "https://dock.io",
-		"isDockUpdating": true,
-		"email":          email.Data.Email,
-		"address":        user.UserInfo.UID,
+		"@context": "https://dock.io",
+		"email":    email.Data.Email,
+		"address":  user.UserInfo.UID,
 		"avatar": map[string]string{
 			"uri": "https://api.adorable.io/avatars/98/abott@adorable.png",
 		},
@@ -322,10 +352,11 @@ func requestUserData(c *gin.Context) {
 	// userID := c.Query("user_id")
 	clientID := c.Query("client_id")
 	clientSecret := c.Query("client_secret")
+	redirectURIAuthCode := c.Query("code")
 
 	query := request.URL.Query()
 	query.Add("grant_type", c.Query("grant_type"))
-	query.Add("code", c.Query("code"))
+	query.Add("code", redirectURIAuthCode)
 	query.Add("client_id", clientID)
 	query.Add("client_secret", clientSecret)
 	request.URL.RawQuery = query.Encode()
@@ -443,6 +474,29 @@ func requestUserData(c *gin.Context) {
 		return
 	}
 
+	logger.Infof("Adding connectionAddress to dockAuth firebase collection: [%s] with code [%s]", userData.UserData.ConnectionAddr, redirectURIAuthCode)
+
+	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	if err != nil {
+		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
+	}
+
+	doc := map[string]interface{}{
+		"redirectURIAuthCode": redirectURIAuthCode,
+		"connectionAddress":   userData.UserData.ConnectionAddr,
+		"accessToken":         accessToken.AccessToken,
+	}
+
+	_, _, err = firestoreClient.Collection("dock-auth").Add(c, doc)
+	if err != nil {
+		message := err.Error()
+		logger.Infof(message)
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": message,
+		})
+		return
+	}
+
 	// Confirm connection
 	// https://github.com/getdock/public-docs/blob/master/partner-integration-by-example.sh#L112
 	url = fmt.Sprintf("https://gateway.dock.io/v1/connection/%s/confirm", userData.UserData.ConnectionAddr)
@@ -482,6 +536,7 @@ func requestUserData(c *gin.Context) {
 	}
 
 	defer response.Body.Close()
+	firestoreClient.Close()
 
 	logger.Infof("%v", userData)
 	c.JSON(200, userData)
