@@ -68,6 +68,8 @@ func main() {
 func updateOrCreateUserByEmail(c *gin.Context) {
 	var err error
 
+	time.Sleep(3 * time.Second) // delay execution so the client stores the connectionAddress response
+
 	// Parse the request body
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
@@ -482,9 +484,7 @@ func requestUserData(c *gin.Context) {
 	}
 
 	doc := map[string]interface{}{
-		"redirectURIAuthCode": redirectURIAuthCode,
-		"connectionAddress":   userData.UserData.ConnectionAddr,
-		"accessToken":         accessToken.AccessToken,
+		"connectionAddress": userData.UserData.ConnectionAddr,
 	}
 
 	_, _, err = firestoreClient.Collection("dock-auth").Add(c, doc)
