@@ -259,6 +259,7 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 
 			query := []firestore.Update{
 				{Path: "userID", Value: user.UserInfo.UID},
+				{Path: "updatedAt", Value: time.Now().Unix()},
 			}
 			_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", collection, doc.Ref.ID), query)
 			if err != nil {
