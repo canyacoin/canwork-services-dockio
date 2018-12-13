@@ -311,16 +311,13 @@ func requestUserData(c *gin.Context) {
 		return
 	}
 
-	logger.Infof("Searching for connectionAddress on dockAuth firebase collection: [%s] with code [%s]", userData.UserData.ConnectionAddr, redirectURIAuthCode)
-
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 	if err != nil {
 		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
 	}
 
-	var doc *firestore.DocumentSnapshot
-	doc, err = getDockAuthDocumentByConnectionAddress(userData.UserData.ConnectionAddr)
-	if err != iterator.Done {
+	doc, err := getDockAuthDocumentByConnectionAddress(userData.UserData.ConnectionAddr)
+	if err != nil {
 		message := err.Error()
 		logger.Infof(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -491,12 +488,11 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 	if err != nil {
-		logger.Fatalf("unable to establish connection to firstore for project ID: %s with error: %s", gcpProjectID, err.Error())
+		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
 	}
 
-	var doc *firestore.DocumentSnapshot
-	doc, err = getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
-	if err != iterator.Done {
+	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
+	if err != nil {
 		message := err.Error()
 		logger.Infof(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
