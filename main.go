@@ -14,7 +14,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	logging "github.com/op/go-logging"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -245,71 +244,76 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 
 	collection := "dock-auth"
 	iter := firestoreClient.Collection(collection).Where("connectionAddress", "==", event.EventData.ConnectionAddr).Limit(1).Documents(c)
+	defer iter.Stop()
 
-	for {
-		var doc *firestore.DocumentSnapshot
-		doc, err = iter.Next()
-		if err == iterator.Done {
-			iter.Stop()
-			break
+	doc, err := iter.Next()
+	if err != nil {
+		message := err.Error()
+		logger.Infof(message)
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": message,
+		})
+		return
+	}
+	if doc != nil {
+		logger.Infof("Updating dock-auth record from dock.io connection [%s] for user [%s]", event.EventData.ConnectionAddr, user.UserInfo.UID)
+
+		query := []firestore.Update{
+			{Path: "userID", Value: user.UserInfo.UID},
+			{Path: "updatedAt", Value: time.Now().Unix()},
 		}
-		if doc != nil {
-			logger.Infof("Updating dock-auth record from dock.io connection [%s] for user [%s]", event.EventData.ConnectionAddr, user.UserInfo.UID)
-
-			query := []firestore.Update{
-				{Path: "userID", Value: user.UserInfo.UID},
-				{Path: "updatedAt", Value: time.Now().Unix()},
-			}
-			_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", collection, doc.Ref.ID), query)
-			if err != nil {
-				message := err.Error()
-				logger.Infof(message)
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": message,
-				})
-				return
-			}
-			firestoreClient.Close()
-			c.JSON(200, doc.Data())
+		_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", collection, doc.Ref.ID), query)
+		if err != nil {
+			message := err.Error()
+			logger.Infof(message)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": message,
+			})
 			return
 		}
+		firestoreClient.Close()
+		c.JSON(200, doc.Data())
+		return
 	}
 
 	collection = "users"
 	iter = firestoreClient.Collection(collection).Where("email", "==", email.Data.Email).Limit(1).Documents(c)
+	defer iter.Stop()
 
-	for {
-		var doc *firestore.DocumentSnapshot
-		doc, err = iter.Next()
-		if err == iterator.Done {
-			break
+	doc, err = iter.Next()
+	if err != nil {
+		message := err.Error()
+		logger.Infof(message)
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": message,
+		})
+		return
+	}
+	if doc != nil {
+		logger.Infof("Updating user record from dock.io email")
+
+		query := []firestore.Update{
+			{Path: "email", Value: email.Data.Email},
+			{Path: "@context", Value: "https://dock.io"},
 		}
-		if doc != nil {
-			logger.Infof("Updating user record from dock.io email")
-
-			query := []firestore.Update{
-				{Path: "email", Value: email.Data.Email},
-				{Path: "@context", Value: "https://dock.io"},
-			}
-			_, err = updateFirestoreProperty(c, fmt.Sprintf("users/%s", doc.Data()["address"]), query)
-			if err != nil {
-				message := err.Error()
-				logger.Infof(message)
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": message,
-				})
-				return
-			}
-			firestoreClient.Close()
-			c.JSON(200, doc.Data())
+		_, err = updateFirestoreProperty(c, fmt.Sprintf("users/%s", doc.Data()["address"]), query)
+		if err != nil {
+			message := err.Error()
+			logger.Infof(message)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": message,
+			})
 			return
 		}
+		firestoreClient.Close()
+		c.JSON(200, doc.Data())
+		return
 	}
 
 	logger.Infof("Creating user record from dock.io email: [%s]", email.Data.Email)
 	logger.Infof("User address is: [%s]", user.UserInfo.UID)
 
-	doc := map[string]interface{}{
+	query := map[string]interface{}{
 		"@context": "https://dock.io",
 		"email":    email.Data.Email,
 		"address":  user.UserInfo.UID,
@@ -318,7 +322,7 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 		},
 	}
 
-	_, err = firestoreClient.Collection(collection).Doc(user.UserInfo.UID).Set(c, doc)
+	_, err = firestoreClient.Collection(collection).Doc(user.UserInfo.UID).Set(c, query)
 
 	if err != nil {
 		message := err.Error()
@@ -485,6 +489,7 @@ func requestUserData(c *gin.Context) {
 
 	collection := "dock-auth"
 	iter := firestoreClient.Collection(collection).Where("connectionAddress", "==", userData.UserData.ConnectionAddr).Limit(1).Documents(c)
+	defer iter.Stop()
 
 	doc, err := iter.Next()
 	if err != nil {
