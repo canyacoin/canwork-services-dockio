@@ -363,7 +363,15 @@ func requestUserData(c *gin.Context) {
 		}
 	}
 
-	defer confirmDockConnection(c, userData.UserData.ConnectionAddr)
+	err = confirmDockConnection(userData.UserData.ConnectionAddr)
+	if err != nil {
+		message := err.Error()
+		logger.Infof(message)
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": message,
+		})
+		return
+	}
 
 	defer response.Body.Close()
 	firestoreClient.Close()
@@ -375,14 +383,7 @@ func requestUserData(c *gin.Context) {
 func requestDataPackages(c *gin.Context) {
 	connectionAddress := c.Query("connectionAddress")
 	logger.Infof("Getting data packages for connection [%s]", connectionAddress)
-	confirmDockConnection(c, connectionAddress)
-}
-
-func confirmDockConnection(c *gin.Context, connectionAddress string) {
-	// Confirm connection
-	// https://github.com/getdock/public-docs/blob/master/partner-integration-by-example.sh#L112
-	url := fmt.Sprintf("https://gateway.dock.io/v1/connection/%s/confirm", connectionAddress)
-	request, err := http.NewRequest("POST", url, nil)
+	err := confirmDockConnection(connectionAddress)
 	if err != nil {
 		message := err.Error()
 		logger.Infof(message)
@@ -390,6 +391,18 @@ func confirmDockConnection(c *gin.Context, connectionAddress string) {
 			"message": message,
 		})
 		return
+	}
+	var i interface{}
+	c.JSON(200, i)
+}
+
+func confirmDockConnection(connectionAddress string) error {
+	// Confirm connection
+	// https://github.com/getdock/public-docs/blob/master/partner-integration-by-example.sh#L112
+	url := fmt.Sprintf("https://gateway.dock.io/v1/connection/%s/confirm", connectionAddress)
+	request, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return err
 	}
 
 	logger.Infof("Adding Authorization header of [%s]", url)
@@ -399,13 +412,10 @@ func confirmDockConnection(c *gin.Context, connectionAddress string) {
 	client := &http.Client{}
 	_, err = client.Do(request)
 	if err != nil {
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": message,
-		})
-		return
+		return err
 	}
+
+	return nil
 }
 
 func handleEmailSchema(c *gin.Context, body []byte) {
