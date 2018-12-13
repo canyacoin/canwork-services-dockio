@@ -19,11 +19,6 @@ import (
 	"google.golang.org/api/option"
 )
 
-const (
-	dockAuthCollectionName = "dock-auth"
-	usersCollectionName    = "users"
-)
-
 var (
 	projectID           = "staging-can-work"
 	serviceID           = "dock-io-auth-service"
@@ -39,8 +34,11 @@ var (
 )
 
 const (
+	dockAuthCollectionName = "dock-auth"
+	usersCollectionName    = "users"
 	schemaBasicUserProfile = "https://getdock.github.io/schemas/basicUserProfile.json"
 	schemaEmail            = "https://getdock.github.io/schemas/email.json"
+	schemaUserProfile      = "https://getdock.github.io/schemas/userProfile.json"
 )
 
 func init() {

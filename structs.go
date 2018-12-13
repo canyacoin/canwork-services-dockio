@@ -29,6 +29,17 @@ type dockIoEvent struct {
 	Secret string `json:"secret"`
 }
 
+type userProfileSchema struct {
+	CreatedAt string `json:"$createdAt"`
+	Data      struct {
+		Bio      string `json:"bio"`
+		Headline string `json:"headline"`
+	} `json:"$data"`
+	OriginAddress    string `json:"$originAddress"`
+	RecipientAddress string `json:"$recipientAddress"`
+	Schema           string `json:"$schema"`
+}
+
 type basicUserProfileSchema struct {
 	CreatedAt string `json:"$createdAt"`
 	Data      struct {
