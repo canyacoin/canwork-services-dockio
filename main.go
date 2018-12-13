@@ -109,6 +109,8 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 		return
 	}
 
+	logger.Infof("IPFS DATA PACKAGE [%s]", event.EventData.IpfsAddr)
+
 	var request *http.Request
 	var response *http.Response
 	client := &http.Client{}
