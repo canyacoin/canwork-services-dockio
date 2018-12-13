@@ -317,7 +317,8 @@ func requestUserData(c *gin.Context) {
 		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
 	}
 
-	doc, err := getDockAuthDocumentByConnectionAddress(userData.UserData.ConnectionAddr)
+	var doc *firestore.DocumentSnapshot
+	doc, err = getDockAuthDocumentByConnectionAddress(userData.UserData.ConnectionAddr)
 	if err != iterator.Done {
 		message := err.Error()
 		logger.Infof(message)
@@ -476,7 +477,8 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 		logger.Fatalf("unable to establish connection to firstore for project ID: %s with error: %s", gcpProjectID, err.Error())
 	}
 
-	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
+	var doc *firestore.DocumentSnapshot
+	doc, err = getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
 	if err != iterator.Done {
 		message := err.Error()
 		logger.Infof(message)
