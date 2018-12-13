@@ -166,7 +166,17 @@ func updateOrCreateUserByEmail(c *gin.Context) {
 	logger.Infof("Dock SCHEMA [%s]", data.Schema)
 
 	if data.Schema == schemaEmail {
-		handleEmailSchema(c, body)
+		err = handleEmailSchema(body)
+		if err != nil {
+			message := err.Error()
+			logger.Infof(message)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": message,
+			})
+			return
+		}
+		var i interface{}
+		c.JSON(200, i)
 	}
 }
 
@@ -415,29 +425,20 @@ func confirmDockConnection(connectionAddress string) error {
 	return nil
 }
 
-func handleEmailSchema(c *gin.Context, body []byte) {
+func handleEmailSchema(body []byte) error {
+	c := context.Background()
 	var email emailSchema
 
 	err := json.Unmarshal(body, &email)
 	if err != nil {
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": message,
-		})
-		return
+		return err
 	}
 
 	opt := option.WithCredentialsFile(firebaseServiceFile)
 	firebaseApp, err := firebase.NewApp(c, nil, opt)
 	if err != nil {
 		logger.Fatalf("error initializing firebaseApp: %v\n", err)
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": message,
-		})
-		return
+		return err
 	}
 
 	var firebaseAuthClient *auth.Client
@@ -446,12 +447,7 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 	logger.Infof("Initiating firebase auth client")
 	firebaseAuthClient, err = firebaseApp.Auth(c)
 	if err != nil {
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": message,
-		})
-		return
+		return err
 	}
 
 	var user *auth.UserRecord
@@ -459,11 +455,7 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 	logger.Infof("Getting FIREBASE AUTH USER with email [%s] from firebase", email.Data.Email)
 	user, err = firebaseAuthClient.GetUserByEmail(c, email.Data.Email)
 	if err != nil {
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": message,
-		})
+		return err
 	}
 
 	if user == nil {
@@ -475,12 +467,7 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 			Disabled(false)
 		user, err = firebaseAuthClient.CreateUser(c, params)
 		if err != nil {
-			message := err.Error()
-			logger.Infof(message)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": message,
-			})
-			return
+			return err
 		}
 
 		logger.Infof("Successfully CREATED FIREBASE AUTH user: [%s]", user.UserInfo.UID)
@@ -489,16 +476,12 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 	if err != nil {
 		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
+		return err
 	}
 
 	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
 	if err != nil {
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": message,
-		})
-		return
+		return err
 	}
 
 	if doc != nil {
@@ -511,12 +494,7 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 
 		_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", dockAuthCollectionName, doc.Ref.ID), query)
 		if err != nil {
-			message := err.Error()
-			logger.Infof(message)
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": message,
-			})
-			return
+			return err
 		}
 	}
 
@@ -525,12 +503,7 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 
 	doc, err = iter.Next()
 	if err != iterator.Done {
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": message,
-		})
-		return
+		return err
 	}
 	if doc != nil {
 		logger.Infof("Updating user record from dock.io email")
@@ -541,16 +514,9 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 		}
 		_, err = updateFirestoreProperty(c, fmt.Sprintf("users/%s", doc.Data()["address"]), query)
 		if err != nil {
-			message := err.Error()
-			logger.Infof(message)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": message,
-			})
-			return
+			return err
 		}
-		firestoreClient.Close()
-		c.JSON(200, doc.Data())
-		return
+		return nil
 	}
 
 	logger.Infof("Creating user record from dock.io email: [%s]", email.Data.Email)
@@ -568,18 +534,12 @@ func handleEmailSchema(c *gin.Context, body []byte) {
 	_, err = firestoreClient.Collection(usersCollectionName).Doc(user.UserInfo.UID).Set(c, query)
 
 	if err != nil {
-		message := err.Error()
-		logger.Infof(message)
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": message,
-		})
-		return
+		return err
 	}
 
 	firestoreClient.Close()
 	logger.Infof("Created doc [%s/%s]", usersCollectionName, user.UserInfo.UID)
-	c.JSON(200, doc)
-	return
+	return nil
 }
 
 func getDockAuthDocumentByConnectionAddress(address string) (*firestore.DocumentSnapshot, error) {
