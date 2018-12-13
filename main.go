@@ -63,6 +63,7 @@ func init() {
 	router.Use(gin.Logger())
 
 	router.GET("/request-user-data", requestUserData)
+	router.GET("/request-data-packages", requestDataPackages)
 	router.POST("/update-or-create-user-by-email", updateOrCreateUserByEmail)
 
 	logger.Infof("GAE LOG: application: %s for project: %s starting up", serviceID, projectID)
@@ -369,6 +370,12 @@ func requestUserData(c *gin.Context) {
 
 	logger.Infof("%v", userData)
 	c.JSON(200, userData)
+}
+
+func requestDataPackages(c *gin.Context) {
+	connectionAddress := c.Query("connectionAddress")
+	logger.Infof("Getting data packages for connection [%s]", connectionAddress)
+	confirmDockConnection(c, connectionAddress)
 }
 
 func confirmDockConnection(c *gin.Context, connectionAddress string) {
