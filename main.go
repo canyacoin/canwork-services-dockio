@@ -68,8 +68,6 @@ func main() {
 func updateOrCreateUserByEmail(c *gin.Context) {
 	var err error
 
-	time.Sleep(10 * time.Second) // delay execution so the client stores the connectionAddress response
-
 	// Parse the request body
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
