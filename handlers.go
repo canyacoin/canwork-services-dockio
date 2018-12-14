@@ -9,6 +9,7 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -86,9 +87,10 @@ func updateOrCreateUserByEmail(body []byte) error {
 	defer iter.Stop()
 
 	doc, err = iter.Next()
-	if err != nil {
+	if err != nil && err != iterator.Done {
 		return err
 	}
+
 	if doc != nil {
 		logger.Infof("Updating user record from dock.io email")
 
