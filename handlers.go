@@ -154,7 +154,7 @@ func storeBasicUserProfile(body []byte) error {
 		logger.Infof("Updating dock-auth record from dock.io connection [%s]", event.EventData.ConnectionAddr)
 
 		query := []firestore.Update{
-			{Path: "name", Value: fmt.Sprintf("%s %s", basicUserProfile.Data.FirstName, basicUserProfile.Data.FirstName)},
+			{Path: "name", Value: fmt.Sprintf("%s %s", basicUserProfile.Data.FirstName, basicUserProfile.Data.LastName)},
 			{Path: "updatedAt", Value: time.Now().Unix()},
 		}
 
