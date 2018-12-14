@@ -9,7 +9,6 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -77,6 +76,7 @@ func updateOrCreateUserByEmail(body []byte) error {
 
 		query := []firestore.Update{
 			{Path: "userID", Value: user.UserInfo.UID},
+			{Path: "email", Value: email.Data.Email},
 			{Path: "updatedAt", Value: time.Now().Unix()},
 		}
 
@@ -90,7 +90,7 @@ func updateOrCreateUserByEmail(body []byte) error {
 	defer iter.Stop()
 
 	doc, err = iter.Next()
-	if err != iterator.Done {
+	if err != nil {
 		return err
 	}
 	if doc != nil {
