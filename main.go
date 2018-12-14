@@ -70,6 +70,8 @@ func main() {
 func handleDockSchemas(c *gin.Context) {
 	var err error
 
+	logger.Infof("CONNECTION ADDRESS [%s]", event.EventData.ConnectionAddr)
+
 	// Parse the request body
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
@@ -104,6 +106,7 @@ func handleDockSchemas(c *gin.Context) {
 	}
 
 	logger.Infof("EVENT NAME [%s]", event.EventName)
+	logger.Infof("CONNECTION ADDRESS [%s]", event.EventData.ConnectionAddr)
 	logger.Infof("IPFS DATA PACKAGE [%s]", event.EventData.IpfsAddr)
 
 	var request *http.Request
