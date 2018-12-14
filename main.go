@@ -83,8 +83,6 @@ func handleDockSchemas(c *gin.Context) {
 		return
 	}
 
-	logger.Infof("REQUEST: %+v\n", body)
-
 	// Marshal the JSON request into the transaction struct
 	err = json.Unmarshal(body, &event)
 	if err != nil {
@@ -95,6 +93,8 @@ func handleDockSchemas(c *gin.Context) {
 		})
 		return
 	}
+
+	logger.Infof("EVENT DATA: %+v\n", event)
 
 	// If an IPFS data package is present, get the data and store it in firestore
 	// https://github.com/getdock/public-docs/blob/master/gateway.rst#data-package-retrieval
@@ -341,6 +341,8 @@ func requestUserData(c *gin.Context) {
 		})
 		return
 	}
+
+	logger.Infof("USER DATA: %+v\n", userData)
 
 	if userData.UserData.ConnectionAddr == "" {
 		message := "Connection address is empty"
