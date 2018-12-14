@@ -39,14 +39,15 @@ func getNewFirestoreClient(ctx context.Context, gcpID string, fbsf string) (*fir
 		gcpID,
 		option.WithServiceAccountFile(fbsf))
 
+	if err != nil {
+		logger.Fatalf("unable to establish connection to firstore for project ID: %s with error: %s", gcpProjectID, err.Error())
+	}
+
 	return fc, err
 }
 
 func updateFirestoreProperty(ctx context.Context, docPath string, updates []firestore.Update) (success bool, err error) {
 	firestoreClient, err = getNewFirestoreClient(ctx, gcpProjectID, firebaseServiceFile)
-	if err != nil {
-		logger.Fatalf("unable to establish connection to firstore for project ID: %s with error: %s", gcpProjectID, err.Error())
-	}
 
 	logger.Infof("Updating doc\t%s", docPath)
 
@@ -58,7 +59,7 @@ func updateFirestoreProperty(ctx context.Context, docPath string, updates []fire
 
 	_, err = doc.Update(ctx, updates)
 	if err != nil {
-		logger.Infof("Err updating doc\t%s", err.Error())
+		logger.Errorf("Err updating doc\t%s", err.Error())
 		return false, err
 	}
 

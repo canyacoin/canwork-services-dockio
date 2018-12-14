@@ -61,10 +61,6 @@ func updateOrCreateUserByEmail(body []byte) error {
 	}
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
-	if err != nil {
-		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
-		return err
-	}
 
 	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
 	if err != nil {
@@ -140,10 +136,6 @@ func storeBasicUserProfile(body []byte) error {
 	}
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
-	if err != nil {
-		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
-		return err
-	}
 
 	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
 	if err != nil {
@@ -179,10 +171,6 @@ func storeUserProfile(body []byte) error {
 	}
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
-	if err != nil {
-		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
-		return err
-	}
 
 	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
 	if err != nil {

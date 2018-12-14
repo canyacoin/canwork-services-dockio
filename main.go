@@ -74,7 +74,7 @@ func handleDockSchemas(c *gin.Context) {
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -85,7 +85,7 @@ func handleDockSchemas(c *gin.Context) {
 	err = json.Unmarshal(body, &event)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
@@ -96,7 +96,7 @@ func handleDockSchemas(c *gin.Context) {
 	// https://github.com/getdock/public-docs/blob/master/gateway.rst#data-package-retrieval
 	if event.EventData.IpfsAddr == "" {
 		message := "No IPFS package found in dock.io connection"
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusExpectationFailed, gin.H{
 			"message": message,
 		})
@@ -114,7 +114,7 @@ func handleDockSchemas(c *gin.Context) {
 	request, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -129,7 +129,7 @@ func handleDockSchemas(c *gin.Context) {
 	response, err = client.Do(request)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -139,7 +139,7 @@ func handleDockSchemas(c *gin.Context) {
 	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -153,7 +153,7 @@ func handleDockSchemas(c *gin.Context) {
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
@@ -166,7 +166,7 @@ func handleDockSchemas(c *gin.Context) {
 		err = updateOrCreateUserByEmail(body)
 		if err != nil {
 			message := err.Error()
-			logger.Infof(message)
+			logger.Errorf(message)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": message,
 			})
@@ -180,7 +180,7 @@ func handleDockSchemas(c *gin.Context) {
 		err = storeBasicUserProfile(body)
 		if err != nil {
 			message := err.Error()
-			logger.Infof(message)
+			logger.Errorf(message)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": message,
 			})
@@ -194,7 +194,7 @@ func handleDockSchemas(c *gin.Context) {
 		err = storeUserProfile(body)
 		if err != nil {
 			message := err.Error()
-			logger.Infof(message)
+			logger.Errorf(message)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": message,
 			})
@@ -214,7 +214,7 @@ func requestUserData(c *gin.Context) {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -242,7 +242,7 @@ func requestUserData(c *gin.Context) {
 	response, err = client.Do(request)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -252,7 +252,7 @@ func requestUserData(c *gin.Context) {
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -264,7 +264,7 @@ func requestUserData(c *gin.Context) {
 	err = json.Unmarshal(body, &accessToken)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
@@ -273,7 +273,7 @@ func requestUserData(c *gin.Context) {
 
 	if accessToken.AccessToken == "" {
 		message := "Access token is empty"
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -288,7 +288,7 @@ func requestUserData(c *gin.Context) {
 	request, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -308,7 +308,7 @@ func requestUserData(c *gin.Context) {
 	response, err = client.Do(request)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -318,7 +318,7 @@ func requestUserData(c *gin.Context) {
 	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": message,
 		})
@@ -330,7 +330,7 @@ func requestUserData(c *gin.Context) {
 	err = json.Unmarshal(body, &userData)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
@@ -339,7 +339,7 @@ func requestUserData(c *gin.Context) {
 
 	if userData.UserData.ConnectionAddr == "" {
 		message := "Connection address is empty"
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
@@ -347,14 +347,11 @@ func requestUserData(c *gin.Context) {
 	}
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
-	if err != nil {
-		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
-	}
 
 	doc, err := getDockAuthDocumentByConnectionAddress(userData.UserData.ConnectionAddr)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
@@ -370,7 +367,7 @@ func requestUserData(c *gin.Context) {
 		_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", dockAuthCollectionName, doc.Ref.ID), query)
 		if err != nil {
 			message := err.Error()
-			logger.Infof(message)
+			logger.Errorf(message)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": message,
 			})
@@ -387,7 +384,7 @@ func requestUserData(c *gin.Context) {
 		_, _, err = firestoreClient.Collection(dockAuthCollectionName).Add(c, query)
 		if err != nil {
 			message := err.Error()
-			logger.Infof(message)
+			logger.Errorf(message)
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": message,
 			})
@@ -398,7 +395,7 @@ func requestUserData(c *gin.Context) {
 	err = confirmDockConnection(userData.UserData.ConnectionAddr)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
@@ -418,7 +415,7 @@ func requestDataPackages(c *gin.Context) {
 	err := confirmDockConnection(connectionAddress)
 	if err != nil {
 		message := err.Error()
-		logger.Infof(message)
+		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": message,
 		})
