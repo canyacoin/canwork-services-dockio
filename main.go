@@ -26,7 +26,6 @@ var (
 	firebaseServiceFile string
 	ethereumPrivateKey  string
 	gcpProjectID        string
-	event               = dockIoEvent{}
 )
 
 const (
@@ -69,6 +68,7 @@ func main() {
 
 func handleDockSchemas(c *gin.Context) {
 	var err error
+	var event dockIoEvent
 
 	logger.Infof("CONNECTION ADDRESS [%s]", event.EventData.ConnectionAddr)
 
@@ -168,7 +168,7 @@ func handleDockSchemas(c *gin.Context) {
 	logger.Infof("Dock SCHEMA [%s]", data.Schema)
 
 	if data.Schema == schemaEmail {
-		err = updateOrCreateUserByEmail(body)
+		err = updateOrCreateUserByEmail(body, event.EventData.ConnectionAddr)
 		if err != nil {
 			message := err.Error()
 			logger.Errorf(message)
@@ -182,7 +182,7 @@ func handleDockSchemas(c *gin.Context) {
 	}
 
 	if data.Schema == schemaBasicUserProfile {
-		err = storeBasicUserProfile(body)
+		err = storeBasicUserProfile(body, event.EventData.ConnectionAddr)
 		if err != nil {
 			message := err.Error()
 			logger.Errorf(message)
@@ -196,7 +196,7 @@ func handleDockSchemas(c *gin.Context) {
 	}
 
 	if data.Schema == schemaUserProfile {
-		err = storeUserProfile(body)
+		err = storeUserProfile(body, event.EventData.ConnectionAddr)
 		if err != nil {
 			message := err.Error()
 			logger.Errorf(message)

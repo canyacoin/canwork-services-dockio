@@ -13,7 +13,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-func updateOrCreateUserByEmail(body []byte) error {
+func updateOrCreateUserByEmail(body []byte, connectionAddress string) error {
 	c := context.Background()
 	var email emailSchema
 
@@ -63,13 +63,13 @@ func updateOrCreateUserByEmail(body []byte) error {
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 
-	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
+	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
 		return err
 	}
 
 	if doc != nil {
-		logger.Infof("Updating dock-auth record from dock.io connection [%s] for user [%s]", event.EventData.ConnectionAddr, user.UserInfo.UID)
+		logger.Infof("Updating dock-auth record from dock.io connection [%s] for user [%s]", connectionAddress, user.UserInfo.UID)
 
 		query := []firestore.Update{
 			{Path: "userID", Value: user.UserInfo.UID},
@@ -128,7 +128,7 @@ func updateOrCreateUserByEmail(body []byte) error {
 	return nil
 }
 
-func storeBasicUserProfile(body []byte) error {
+func storeBasicUserProfile(body []byte, connectionAddress string) error {
 	c := context.Background()
 	var basicUserProfile basicUserProfileSchema
 
@@ -139,13 +139,13 @@ func storeBasicUserProfile(body []byte) error {
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 
-	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
+	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
 		return err
 	}
 
 	if doc != nil {
-		logger.Infof("Updating dock-auth record from dock.io connection [%s]", event.EventData.ConnectionAddr)
+		logger.Infof("Updating dock-auth record from dock.io connection [%s]", connectionAddress)
 
 		query := []firestore.Update{
 			{Path: "name", Value: fmt.Sprintf("%s %s", basicUserProfile.Data.FirstName, basicUserProfile.Data.LastName)},
@@ -163,7 +163,7 @@ func storeBasicUserProfile(body []byte) error {
 	return nil
 }
 
-func storeUserProfile(body []byte) error {
+func storeUserProfile(body []byte, connectionAddress string) error {
 	c := context.Background()
 	var userProfile userProfileSchema
 
@@ -174,13 +174,13 @@ func storeUserProfile(body []byte) error {
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 
-	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
+	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
 		return err
 	}
 
 	if doc != nil {
-		logger.Infof("Updating dock-auth record from dock.io connection [%s]", event.EventData.ConnectionAddr)
+		logger.Infof("Updating dock-auth record from dock.io connection [%s]", connectionAddress)
 
 		query := []firestore.Update{
 			{Path: "bio", Value: userProfile.Data.Bio},
