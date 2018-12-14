@@ -59,6 +59,7 @@ func updateOrCreateUserByEmail(body []byte, connectionAddress string) error {
 	}
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	defer firestoreClient.Close()
 
 	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
@@ -120,7 +121,6 @@ func updateOrCreateUserByEmail(body []byte, connectionAddress string) error {
 		return err
 	}
 
-	firestoreClient.Close()
 	logger.Infof("Created doc [%s/%s]", usersCollectionName, user.UserInfo.UID)
 	return nil
 }
@@ -135,6 +135,7 @@ func storeBasicUserProfile(body []byte, connectionAddress string) error {
 	}
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	defer firestoreClient.Close()
 
 	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
@@ -156,7 +157,6 @@ func storeBasicUserProfile(body []byte, connectionAddress string) error {
 		}
 	}
 
-	firestoreClient.Close()
 	return nil
 }
 
@@ -170,6 +170,7 @@ func storeUserProfile(body []byte, connectionAddress string) error {
 	}
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	defer firestoreClient.Close()
 
 	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
@@ -191,6 +192,5 @@ func storeUserProfile(body []byte, connectionAddress string) error {
 		}
 	}
 
-	firestoreClient.Close()
 	return nil
 }
