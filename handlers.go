@@ -129,3 +129,80 @@ func updateOrCreateUserByEmail(body []byte) error {
 	logger.Infof("Created doc [%s/%s]", usersCollectionName, user.UserInfo.UID)
 	return nil
 }
+
+func storeBasicUserProfile(body []byte) error {
+	c := context.Background()
+	var basicUserProfile basicUserProfileSchema
+
+	err := json.Unmarshal(body, &basicUserProfile)
+	if err != nil {
+		return err
+	}
+
+	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	if err != nil {
+		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
+		return err
+	}
+
+	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
+	if err != nil {
+		return err
+	}
+
+	if doc != nil {
+		logger.Infof("Updating dock-auth record from dock.io connection [%s]", event.EventData.ConnectionAddr)
+
+		query := []firestore.Update{
+			{Path: "name", Value: fmt.Sprintf("%s %s", basicUserProfile.Data.FirstName, basicUserProfile.Data.FirstName)},
+			{Path: "updatedAt", Value: time.Now().Unix()},
+		}
+
+		_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", dockAuthCollectionName, doc.Ref.ID), query)
+		if err != nil {
+			return err
+		}
+	}
+
+	firestoreClient.Close()
+	return nil
+}
+
+func storeUserProfile(body []byte) error {
+	c := context.Background()
+	var userProfile userProfileSchema
+
+	err := json.Unmarshal(body, &userProfile)
+	if err != nil {
+		return err
+	}
+
+	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	if err != nil {
+		logger.Fatalf("unable to establish connection to firestore for project ID: %s with error: %s", gcpProjectID, err.Error())
+		return err
+	}
+
+	doc, err := getDockAuthDocumentByConnectionAddress(event.EventData.ConnectionAddr)
+	if err != nil {
+		return err
+	}
+
+	if doc != nil {
+		logger.Infof("Updating dock-auth record from dock.io connection [%s]", event.EventData.ConnectionAddr)
+
+		query := []firestore.Update{
+			{Path: "bio", Value: userProfile.Data.Bio},
+			{Path: "headline", Value: userProfile.Data.Headline},
+			{Path: "updatedAt", Value: time.Now().Unix()},
+		}
+
+		_, err = updateFirestoreProperty(c, fmt.Sprintf("%s/%s", dockAuthCollectionName, doc.Ref.ID), query)
+		if err != nil {
+			return err
+		}
+	}
+
+	firestoreClient.Close()
+	return nil
+}

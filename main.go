@@ -175,6 +175,34 @@ func handleDockSchemas(c *gin.Context) {
 		var i interface{}
 		c.JSON(200, i)
 	}
+
+	if data.Schema == schemaBasicUserProfile {
+		err = storeBasicUserProfile(body)
+		if err != nil {
+			message := err.Error()
+			logger.Infof(message)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": message,
+			})
+			return
+		}
+		var i interface{}
+		c.JSON(200, i)
+	}
+
+	if data.Schema == schemaUserProfile {
+		err = storeUserProfile(body)
+		if err != nil {
+			message := err.Error()
+			logger.Infof(message)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": message,
+			})
+			return
+		}
+		var i interface{}
+		c.JSON(200, i)
+	}
 }
 
 func requestUserData(c *gin.Context) {
