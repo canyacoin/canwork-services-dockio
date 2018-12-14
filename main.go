@@ -95,10 +95,12 @@ func handleDockSchemas(c *gin.Context) {
 	}
 
 	logger.Infof("EVENT DATA: %+v\n", event)
+	connectionAddress := event.EventData.ConnectionAddr
+	ipfsAddress := event.EventData.IpfsAddr
 
 	// If an IPFS data package is present, get the data and store it in firestore
 	// https://github.com/getdock/public-docs/blob/master/gateway.rst#data-package-retrieval
-	if event.EventData.IpfsAddr == "" {
+	if ipfsAddress == "" {
 		message := "No IPFS package found in dock.io connection"
 		logger.Errorf(message)
 		c.JSON(http.StatusExpectationFailed, gin.H{
@@ -108,14 +110,14 @@ func handleDockSchemas(c *gin.Context) {
 	}
 
 	logger.Infof("EVENT NAME [%s]", event.EventName)
-	logger.Infof("CONNECTION ADDRESS [%s]", event.EventData.ConnectionAddr)
-	logger.Infof("IPFS DATA PACKAGE [%s]", event.EventData.IpfsAddr)
+	logger.Infof("CONNECTION ADDRESS [%s]", connectionAddress)
+	logger.Infof("IPFS DATA PACKAGE [%s]", ipfsAddress)
 
 	var request *http.Request
 	var response *http.Response
 	client := &http.Client{}
 
-	url := fmt.Sprintf("https://gateway.dock.io/v1/connection/%s/packages/%s", event.EventData.ConnectionAddr, event.EventData.IpfsAddr)
+	url := fmt.Sprintf("https://gateway.dock.io/v1/connection/%s/packages/%s", connectionAddress, ipfsAddress)
 	request, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		message := err.Error()
@@ -168,7 +170,7 @@ func handleDockSchemas(c *gin.Context) {
 	logger.Infof("Dock SCHEMA [%s]", data.Schema)
 
 	if data.Schema == schemaEmail {
-		err = updateOrCreateUserByEmail(body, event.EventData.ConnectionAddr)
+		err = updateOrCreateUserByEmail(body, connectionAddress)
 		if err != nil {
 			message := err.Error()
 			logger.Errorf(message)
@@ -182,7 +184,7 @@ func handleDockSchemas(c *gin.Context) {
 	}
 
 	if data.Schema == schemaBasicUserProfile {
-		err = storeBasicUserProfile(body, event.EventData.ConnectionAddr)
+		err = storeBasicUserProfile(body, connectionAddress)
 		if err != nil {
 			message := err.Error()
 			logger.Errorf(message)
@@ -196,7 +198,7 @@ func handleDockSchemas(c *gin.Context) {
 	}
 
 	if data.Schema == schemaUserProfile {
-		err = storeUserProfile(body, event.EventData.ConnectionAddr)
+		err = storeUserProfile(body, connectionAddress)
 		if err != nil {
 			message := err.Error()
 			logger.Errorf(message)
@@ -344,7 +346,9 @@ func requestUserData(c *gin.Context) {
 
 	logger.Infof("USER DATA: %+v\n", userData)
 
-	if userData.UserData.ConnectionAddr == "" {
+	connectionAddress := userData.UserData.ConnectionAddr
+
+	if connectionAddress == "" {
 		message := "Connection address is empty"
 		logger.Errorf(message)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -355,7 +359,7 @@ func requestUserData(c *gin.Context) {
 
 	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 
-	doc, err := getDockAuthDocumentByConnectionAddress(userData.UserData.ConnectionAddr)
+	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
 		message := err.Error()
 		logger.Errorf(message)
@@ -365,7 +369,7 @@ func requestUserData(c *gin.Context) {
 		return
 	}
 	if doc != nil {
-		logger.Infof("Updating connectionAddress to dockAuth firebase collection: [%s] with code [%s]", userData.UserData.ConnectionAddr, redirectURIAuthCode)
+		logger.Infof("Updating connectionAddress to dockAuth firebase collection: [%s] with code [%s]", connectionAddress, redirectURIAuthCode)
 
 		query := []firestore.Update{
 			{Path: "redirectURIAuthCode", Value: redirectURIAuthCode},
@@ -381,11 +385,11 @@ func requestUserData(c *gin.Context) {
 			return
 		}
 	} else {
-		logger.Infof("Adding connectionAddress to dockAuth firebase collection: [%s] with code [%s]", userData.UserData.ConnectionAddr, redirectURIAuthCode)
+		logger.Infof("Adding connectionAddress to dockAuth firebase collection: [%s] with code [%s]", connectionAddress, redirectURIAuthCode)
 
 		query := map[string]interface{}{
 			"redirectURIAuthCode": redirectURIAuthCode,
-			"connectionAddress":   userData.UserData.ConnectionAddr,
+			"connectionAddress":   connectionAddress,
 		}
 
 		_, _, err = firestoreClient.Collection(dockAuthCollectionName).Add(c, query)
@@ -399,7 +403,7 @@ func requestUserData(c *gin.Context) {
 		}
 	}
 
-	err = confirmDockConnection(userData.UserData.ConnectionAddr)
+	err = confirmDockConnection(connectionAddress)
 	if err != nil {
 		message := err.Error()
 		logger.Errorf(message)
