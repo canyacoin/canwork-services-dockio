@@ -83,6 +83,8 @@ func handleDockSchemas(c *gin.Context) {
 		return
 	}
 
+	logger.Infof("REQUEST: %+v\n", body)
+
 	// Marshal the JSON request into the transaction struct
 	err = json.Unmarshal(body, &event)
 	if err != nil {
