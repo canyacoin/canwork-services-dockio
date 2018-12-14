@@ -41,7 +41,10 @@ func updateOrCreateUserByEmail(body []byte, connectionAddress string) error {
 	var user *auth.UserRecord
 
 	logger.Infof("Getting FIREBASE AUTH USER with email [%s] from firebase", email.Data.Email)
-	user, _ = firebaseAuthClient.GetUserByEmail(c, email.Data.Email)
+	user, err = firebaseAuthClient.GetUserByEmail(c, email.Data.Email)
+	if err != nil && !auth.IsUserNotFound(err) {
+		return err
+	}
 
 	if user == nil {
 		logger.Infof("Creating FIREBASE AUTH USER record from dock.io email")
