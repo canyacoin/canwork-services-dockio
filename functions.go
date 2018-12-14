@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -64,4 +65,25 @@ func updateFirestoreProperty(ctx context.Context, docPath string, updates []fire
 	firestoreClient.Close()
 	logger.Infof("Updated doc\t%s", docPath)
 	return true, nil
+}
+
+func getDockAuthDocumentByConnectionAddress(address string) (*firestore.DocumentSnapshot, error) {
+	c := context.Background()
+
+	logger.Infof("Searching dock-auth record from dock.io connection [%s]", address)
+
+	iter := firestoreClient.Collection(dockAuthCollectionName).Where("connectionAddress", "==", address).Limit(1).Documents(c)
+	defer iter.Stop()
+
+	doc, err := iter.Next()
+
+	if err == iterator.Done {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return doc, nil
 }
