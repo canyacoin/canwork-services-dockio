@@ -155,6 +155,7 @@ func storeBasicUserProfile(body []byte) error {
 
 		query := []firestore.Update{
 			{Path: "name", Value: fmt.Sprintf("%s %s", basicUserProfile.Data.FirstName, basicUserProfile.Data.LastName)},
+			{Path: "avatar", Value: basicUserProfile.Data.Avatar},
 			{Path: "updatedAt", Value: time.Now().Unix()},
 		}
 
