@@ -167,9 +167,10 @@ func handleDockSchemas(c *gin.Context) {
 		return
 	}
 
-	logger.Infof("Dock SCHEMA [%s]", data.Schema)
+	schema := data.Schema
+	logger.Infof("Dock SCHEMA [%s]", schema)
 
-	if data.Schema == schemaEmail {
+	if schema == schemaEmail {
 		err = updateOrCreateUserByEmail(body, connectionAddress)
 		if err != nil {
 			message := err.Error()
@@ -183,7 +184,7 @@ func handleDockSchemas(c *gin.Context) {
 		c.JSON(200, i)
 	}
 
-	if data.Schema == schemaBasicUserProfile {
+	if schema == schemaBasicUserProfile {
 		err = storeBasicUserProfile(body, connectionAddress)
 		if err != nil {
 			message := err.Error()
@@ -197,7 +198,7 @@ func handleDockSchemas(c *gin.Context) {
 		c.JSON(200, i)
 	}
 
-	if data.Schema == schemaUserProfile {
+	if schema == schemaUserProfile {
 		err = storeUserProfile(body, connectionAddress)
 		if err != nil {
 			message := err.Error()
