@@ -69,7 +69,7 @@ func handleDockSchemas(c *gin.Context) {
 	var err error
 	var event dockIoEvent
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(7 * time.Second)
 
 	logger.Infof("CONNECTION ADDRESS [%s]", event.EventData.ConnectionAddr)
 
