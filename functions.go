@@ -63,7 +63,6 @@ func updateFirestoreProperty(ctx context.Context, docPath string, updates []fire
 		return false, err
 	}
 
-	firestoreClient.Close()
 	logger.Infof("Updated doc\t%s", docPath)
 	return true, nil
 }

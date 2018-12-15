@@ -415,7 +415,6 @@ func requestUserData(c *gin.Context) {
 	}
 
 	defer response.Body.Close()
-	firestoreClient.Close()
 
 	logger.Infof("%v", userData)
 	c.JSON(200, userData)
