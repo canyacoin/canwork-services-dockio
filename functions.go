@@ -89,5 +89,6 @@ func getDockAuthDocumentByConnectionAddress(address string) (*firestore.Document
 		return nil, err
 	}
 
+	logger.Infof("Found dock-auth record from dock.io connection [%s]", address)
 	return doc, nil
 }
