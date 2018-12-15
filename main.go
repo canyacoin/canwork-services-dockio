@@ -357,8 +357,6 @@ func requestUserData(c *gin.Context) {
 		return
 	}
 
-	firestoreClient, _ := getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
-
 	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {
 		message := err.Error()
@@ -386,6 +384,9 @@ func requestUserData(c *gin.Context) {
 		}
 	} else {
 		logger.Infof("Adding connectionAddress to dockAuth firebase collection: [%s] with code [%s]", connectionAddress, redirectURIAuthCode)
+
+		firestoreClient, _ := getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+		defer firestoreClient.Close()
 
 		query := map[string]interface{}{
 			"redirectURIAuthCode": redirectURIAuthCode,
