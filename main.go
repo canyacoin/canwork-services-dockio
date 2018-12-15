@@ -69,6 +69,8 @@ func handleDockSchemas(c *gin.Context) {
 	var err error
 	var event dockIoEvent
 
+	time.Sleep(10 * time.Second)
+
 	logger.Infof("CONNECTION ADDRESS [%s]", event.EventData.ConnectionAddr)
 
 	// Parse the request body
