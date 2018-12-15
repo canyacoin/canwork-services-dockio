@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -60,6 +61,9 @@ func init() {
 	router.POST("/schemas-webhook", handleDockSchemas)
 
 	logger.Infof("GAE LOG: application: %s for project: %s starting up", serviceID, projectID)
+
+	ctx := context.Background()
+	firestoreClient, _ = getNewFirestoreClient(ctx, gcpProjectID, firebaseServiceFile)
 }
 
 func main() {
@@ -357,8 +361,6 @@ func requestUserData(c *gin.Context) {
 		})
 		return
 	}
-
-	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 
 	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {

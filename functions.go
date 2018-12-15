@@ -47,8 +47,6 @@ func getNewFirestoreClient(ctx context.Context, gcpID string, fbsf string) (*fir
 }
 
 func updateFirestoreProperty(ctx context.Context, docPath string, updates []firestore.Update) (success bool, err error) {
-	firestoreClient, err = getNewFirestoreClient(ctx, gcpProjectID, firebaseServiceFile)
-
 	logger.Infof("Updating doc\t%s", docPath)
 
 	for _, update := range updates {
