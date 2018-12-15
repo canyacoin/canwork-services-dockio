@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -79,16 +78,12 @@ func getDockAuthDocumentByConnectionAddress(address string) (*firestore.Document
 	iter := firestoreClient.Collection(dockAuthCollectionName).Where("connectionAddress", "==", address).Limit(1).Documents(c)
 	defer iter.Stop()
 
-	doc, err := iter.Next()
+	doc, _ := iter.Next()
 
-	if err == iterator.Done {
-		return nil, nil
+	if doc != nil {
+		logger.Infof("Found dock-auth record from dock.io connection [%s]", address)
+		return doc, nil
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	logger.Infof("Found dock-auth record from dock.io connection [%s]", address)
-	return doc, nil
+	return nil, nil
 }
