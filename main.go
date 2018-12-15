@@ -21,7 +21,6 @@ var (
 	router              *gin.Engine
 	logger              = logging.MustGetLogger("main")
 	startedAt           = time.Now()
-	firestoreClient     *firestore.Client
 	firebaseApp         *firebase.App
 	firebaseServiceFile string
 	ethereumPrivateKey  string
@@ -358,7 +357,7 @@ func requestUserData(c *gin.Context) {
 		return
 	}
 
-	firestoreClient, err = getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	firestoreClient, _ := getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
 
 	doc, err := getDockAuthDocumentByConnectionAddress(connectionAddress)
 	if err != nil {

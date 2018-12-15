@@ -47,7 +47,8 @@ func getNewFirestoreClient(ctx context.Context, gcpID string, fbsf string) (*fir
 }
 
 func updateFirestoreProperty(ctx context.Context, docPath string, updates []firestore.Update) (success bool, err error) {
-	firestoreClient, err = getNewFirestoreClient(ctx, gcpProjectID, firebaseServiceFile)
+	firestoreClient, _ := getNewFirestoreClient(ctx, gcpProjectID, firebaseServiceFile)
+	defer firestoreClient.Close()
 
 	logger.Infof("Updating doc\t%s", docPath)
 
@@ -63,7 +64,6 @@ func updateFirestoreProperty(ctx context.Context, docPath string, updates []fire
 		return false, err
 	}
 
-	firestoreClient.Close()
 	logger.Infof("Updated doc\t%s", docPath)
 	return true, nil
 }
@@ -72,6 +72,9 @@ func getDockAuthDocumentByConnectionAddress(address string) (*firestore.Document
 	c := context.Background()
 
 	logger.Infof("Searching dock-auth record from dock.io connection [%s]", address)
+
+	firestoreClient, _ := getNewFirestoreClient(c, gcpProjectID, firebaseServiceFile)
+	defer firestoreClient.Close()
 
 	iter := firestoreClient.Collection(dockAuthCollectionName).Where("connectionAddress", "==", address).Limit(1).Documents(c)
 	defer iter.Stop()
