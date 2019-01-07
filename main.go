@@ -50,7 +50,7 @@ func init() {
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowMethods:    []string{"POST", "GET", "OPTIONS"},
-		AllowHeaders:    []string{"*"},
+		AllowHeaders:    []string{"Authorization", "User-Agent", "Origin", "Accept", "Referer"},
 	}))
 	router.Use(gin.Logger())
 
