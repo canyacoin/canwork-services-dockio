@@ -235,7 +235,7 @@ func init() {
 "X-PING", 
 "X-PINGOTHER", 
 "X-Powered-By", 
-"X-Requested-With"
+"X-Requested-With",
 		},
 	}))
 	router.Use(gin.Logger())
