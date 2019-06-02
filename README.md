@@ -1,3 +1,12 @@
+****
+
+> **Mirror**
+> This repo mirrors from Gitlab to Github. Please commit to the Gitlab repo:
+> https://gitlab.com/canyacoin/canwork/services/dock-io-integration
+
+****
+
+
 # Dock.io client webhook
 
 ## References
